@@ -215,6 +215,27 @@ namespace WandEnhancer.Core
                     }
                 },
                 {
+                    EPatchType.DevToolsOnF12,
+                    new[]
+                    {
+                        new PatchEntry
+                        {
+                            Name = "devToolsBeforeInputEvent",
+                            CandidateFileNames = new[] { "index.js" },
+                            SearchHints = new[] { "whenReady().then(" },
+                            // Anchor on the Electron main-process `<app>.whenReady().then(`
+                            // call. This site is far more stable than the minified renderer
+                            // keydown listener that previously held the F12 -> ACTION_OPEN_DEV_TOOLS
+                            // dispatch (its identifiers and shape change on every Wand release).
+                            // We attach a `before-input-event` hook to every BrowserWindow's
+                            // webContents which toggles DevTools on F12 directly from the main
+                            // process, bypassing the renderer dispatcher entirely.
+                            Target = new Regex(@"(?<app>\w+)\.whenReady\(\)\.then\("),
+                            Patch = "${app}.on(\"browser-window-created\",((_,w)=>{try{w.webContents.on(\"before-input-event\",((_,i)=>{if(\"F12\"===i.key&&\"keyDown\"===i.type){w.webContents.isDevToolsOpened()?w.webContents.closeDevTools():w.webContents.openDevTools({mode:\"detach\"})}}))}catch(e){}})),${app}.whenReady().then("
+                        }
+                    }
+                },
+                {
                     EPatchType.RemoteWebPanelPreview,
                     new[]
                     {
