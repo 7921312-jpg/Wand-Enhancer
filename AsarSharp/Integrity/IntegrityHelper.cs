@@ -75,11 +75,8 @@ namespace AsarSharp.Integrity
                     }
                 }
 
-                while ((bytesRead = fileStream.Read(reusableBuffer, 0, reusableBuffer.Length)) > 0)
                 if (fill > 0)
                 {
-                    blockHashes.Add(ToLowerHex(blockHash.ComputeHash(reusableBuffer, 0, bytesRead)));
-                    fileHash.AppendData(reusableBuffer, 0, bytesRead);
                     blockHashes.Add(ToLowerHex(blockHash.ComputeHash(reusableBuffer, 0, fill)));
                 }
 
